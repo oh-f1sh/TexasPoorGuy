@@ -13,7 +13,7 @@ type GameModel struct {
 }
 
 func InitialGameModel() GameModel {
-	vp := viewport.New(35, 10)
+	vp := viewport.New(30, 20)
 	message := []string{"Start Round 1", "Big Blind", "Small Blind"}
 	vp.SetContent(strings.Join(message, "\n"))
 	return GameModel{

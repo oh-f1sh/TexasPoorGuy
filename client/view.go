@@ -12,6 +12,9 @@ var (
 	FocusedStyle = lipgloss.NewStyle().
 			BorderStyle(lipgloss.NormalBorder()).
 			BorderForeground(lipgloss.Color("69"))
+	OtherStyle = lipgloss.NewStyle().
+			BorderStyle(lipgloss.NormalBorder()).
+			BorderForeground(lipgloss.Color(hotPink))
 )
 
 const (
@@ -21,6 +24,7 @@ const (
 
 type PoorGuyClient struct {
 	CardView       CardModel
+	HandCardView   HandCardModel
 	GameView       GameModel
 	ControlView    ControlModel
 	ScoreBoardView ScoreBoardModel
@@ -31,6 +35,7 @@ type PoorGuyClient struct {
 func InitialPoorGuyClient() PoorGuyClient {
 	return PoorGuyClient{
 		CardView:       InitialCardModel(),
+		HandCardView:   InitialHandCardModel(),
 		GameView:       InitialGameModel(),
 		ControlView:    InitialControlModel(),
 		ScoreBoardView: InitialScoreBoardModel(),
@@ -68,44 +73,35 @@ func (m PoorGuyClient) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m PoorGuyClient) View() string {
-	// if m.Focus == focusChat {
-	// 	return lipgloss.JoinHorizontal(lipgloss.Top,
-	// 		lipgloss.JoinVertical(
-	// 			lipgloss.Left,
-	// 			m.CardView.View(),
-	// 			m.GameView.View(),
-	// 			UnfocusedStyle.Render(m.ControlView.View()),
-	// 		),
-	// 		lipgloss.JoinVertical(
-	// 			lipgloss.Left,
-	// 			m.ScoreBoardView.View(),
-	// 			FocusedStyle.Render(m.ChatView.View()),
-	// 		),
-	// 	)
-	// } else {
-	// 	return lipgloss.JoinHorizontal(lipgloss.Top,
-	// 		lipgloss.JoinVertical(lipgloss.Left, m.CardView.View(), m.GameView.View(), FocusedStyle.Render(m.ControlView.View())),
-	// 		lipgloss.JoinVertical(lipgloss.Left, m.ScoreBoardView.View(), UnfocusedStyle.Render(m.ChatView.View())),
-	// 	)
-	// }
-
 	if m.Focus == focusChat {
-		return lipgloss.JoinVertical(
-			lipgloss.Left,
-			m.CardView.View(),
-			m.GameView.View(),
-			UnfocusedStyle.Render(m.ControlView.View()),
-			m.ScoreBoardView.View(),
-			FocusedStyle.Render(m.ChatView.View()),
+		return lipgloss.JoinHorizontal(lipgloss.Top,
+			lipgloss.JoinVertical(lipgloss.Left,
+				lipgloss.JoinHorizontal(lipgloss.Top,
+					OtherStyle.Render(m.CardView.View()),
+					OtherStyle.Render(m.HandCardView.View()),
+				),
+				OtherStyle.Render(m.GameView.View()),
+				UnfocusedStyle.Render(m.ControlView.View()),
+			),
+			lipgloss.JoinVertical(lipgloss.Left,
+				OtherStyle.Render(m.ScoreBoardView.View()),
+				FocusedStyle.Render(m.ChatView.View()),
+			),
 		)
 	} else {
-		return lipgloss.JoinVertical(
-			lipgloss.Left,
-			m.CardView.View(),
-			m.GameView.View(),
-			FocusedStyle.Render(m.ControlView.View()),
-			m.ScoreBoardView.View(),
-			UnfocusedStyle.Render(m.ChatView.View()),
+		return lipgloss.JoinHorizontal(lipgloss.Top,
+			lipgloss.JoinVertical(lipgloss.Left,
+				lipgloss.JoinHorizontal(lipgloss.Top,
+					OtherStyle.Render(m.CardView.View()),
+					OtherStyle.Render(m.HandCardView.View()),
+				),
+				OtherStyle.Render(m.GameView.View()),
+				FocusedStyle.Render(m.ControlView.View()),
+			),
+			lipgloss.JoinVertical(lipgloss.Left,
+				OtherStyle.Render(m.ScoreBoardView.View()),
+				UnfocusedStyle.Render(m.ChatView.View()),
+			),
 		)
 	}
 }

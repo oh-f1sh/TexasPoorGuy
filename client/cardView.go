@@ -19,6 +19,10 @@ const (
 	card3
 	card4
 	card5
+
+	red   = "16"
+	black = "1"
+	white = "255"
 )
 
 func InitialCardModel() CardModel {
@@ -91,5 +95,59 @@ func (m CardModel) View() string {
 		m.viewport[card3].View(),
 		m.viewport[card4].View(),
 		m.viewport[card5].View(),
+	)
+}
+
+type HandCardModel struct {
+	viewport   []viewport.Model
+	card       []string
+	color      []string
+	background []string
+}
+
+func InitialHandCardModel() HandCardModel {
+	vp := []viewport.Model{
+		viewport.New(4, 4),
+		viewport.New(4, 4),
+	}
+	bg := []string{white, white}
+	clr := []string{red, black}
+	card := []string{"A\nX", "K\nX"}
+	vp[card1].SetContent(card[card1])
+	vp[card2].SetContent(card[card2])
+
+	vp[card1].Style = lipgloss.NewStyle().
+		Background(lipgloss.Color(bg[card1])).
+		Foreground(lipgloss.Color(clr[card1])).
+		Align(lipgloss.Center).
+		Margin(1).
+		Bold(true)
+	vp[card2].Style = lipgloss.NewStyle().
+		Background(lipgloss.Color(bg[card2])).
+		Foreground(lipgloss.Color(clr[card2])).
+		Align(lipgloss.Center).
+		Margin(1).
+		Bold(true)
+
+	return HandCardModel{
+		viewport:   vp,
+		card:       card,
+		color:      clr,
+		background: bg,
+	}
+}
+
+func (m HandCardModel) Init() tea.Cmd {
+	return nil
+}
+
+func (m HandCardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	return m, nil
+}
+
+func (m HandCardModel) View() string {
+	return lipgloss.JoinHorizontal(lipgloss.Top,
+		m.viewport[card1].View(),
+		m.viewport[card2].View(),
 	)
 }

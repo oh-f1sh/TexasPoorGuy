@@ -57,7 +57,7 @@ func (m ControlModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m ControlModel) View() string {
 	s := strings.Builder{}
-	s.WriteString("Use arrow keys to navigate between options.\n\n")
+	s.WriteString("Use arrow keys to navigate    \nbetween options.\n\n")
 
 	for i := 0; i < len(Choices); i++ {
 		if m.cursor == i {

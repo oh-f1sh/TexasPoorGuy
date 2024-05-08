@@ -13,7 +13,7 @@ type ScoreBoardModel struct {
 }
 
 func InitialScoreBoardModel() ScoreBoardModel {
-	vp := viewport.New(30, 5)
+	vp := viewport.New(30, 12)
 	scores := []string{
 		"MTT: Score 100",
 		"MTT: Score 100",

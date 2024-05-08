@@ -1,6 +1,8 @@
 package main
 
 import (
+	_ "github.com/oh-f1sh/TexasPoorGuy/conf"
+
 	"log"
 
 	tea "github.com/charmbracelet/bubbletea"
