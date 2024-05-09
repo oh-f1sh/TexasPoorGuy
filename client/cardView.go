@@ -20,9 +20,10 @@ const (
 	card4
 	card5
 
-	red   = "16"
-	black = "1"
-	white = "255"
+	darkgrey = "8"
+	black    = "16"
+	red      = "1"
+	white    = "255"
 )
 
 func InitialCardModel() CardModel {

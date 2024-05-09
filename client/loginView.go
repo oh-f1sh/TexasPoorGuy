@@ -27,16 +27,14 @@ func (l LoginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.Type {
 		case tea.KeyEnter:
 			if l.focused == len(l.inputs)-1 {
-				// TODO: complete login info, next step
-				fmt.Printf("welcome %v, connecting to %v\n", l.inputs[name].Value(), l.inputs[address].Value())
-				return l, tea.Quit
+				return InitialPoorGuyClient(), tea.Batch(cmds...)
 			}
 			l.nextInput()
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return l, tea.Quit
-		case tea.KeyShiftTab, tea.KeyCtrlP:
+		case tea.KeyShiftTab:
 			l.prevInput()
-		case tea.KeyTab, tea.KeyCtrlN:
+		case tea.KeyTab:
 			l.nextInput()
 		}
 		for i := range l.inputs {
@@ -62,11 +60,17 @@ func (l LoginModel) View() string {
  %s
  %s
 
+
+ %s
+ %s
+
  %s
 `,
 		inputStyle.Width(30).Render("User Name"),
 		l.inputs[name].View(),
-		inputStyle.Width(20).Render("Address"),
+		inputStyle.Width(30).Render("Password"),
+		l.inputs[pwd].View(),
+		inputStyle.Width(20).Render("Server Address"),
 		l.inputs[address].View(),
 		continueStyle.Render("Press Enter to start Texas Poor Guy!    =========>"),
 	) + "\n"
@@ -74,6 +78,7 @@ func (l LoginModel) View() string {
 
 const (
 	name = iota
+	pwd
 	address
 )
 
@@ -85,19 +90,36 @@ var (
 )
 
 func InitialLoginModel() LoginModel {
-	var inputs []textinput.Model = make([]textinput.Model, 2)
+	var inputs []textinput.Model = make([]textinput.Model, 3)
 	inputs[name] = textinput.New()
 	inputs[name].Placeholder = "Your user name"
 	inputs[name].Focus()
 	inputs[name].CharLimit = 20
 	inputs[name].Width = 30
 	inputs[name].Prompt = ""
+	if len(DEFAULTUSERNAME) > 0 {
+		inputs[name].SetValue(DEFAULTUSERNAME)
+	}
+
+	inputs[pwd] = textinput.New()
+	inputs[pwd].Placeholder = "Your password"
+	inputs[pwd].CharLimit = 20
+	inputs[pwd].Width = 30
+	inputs[pwd].Prompt = ""
+	inputs[pwd].EchoMode = textinput.EchoPassword
+	inputs[pwd].EchoCharacter = '•'
+	if len(DEFAULTPWD) > 0 {
+		inputs[pwd].SetValue(DEFAULTPWD)
+	}
 
 	inputs[address] = textinput.New()
 	inputs[address].Placeholder = "xxx.xxx.xxx.xxx "
 	inputs[address].CharLimit = 15
 	inputs[address].Width = 20
 	inputs[address].Prompt = ""
+	if len(SERVER_ADDR) > 0 {
+		inputs[address].SetValue(SERVER_ADDR)
+	}
 
 	return LoginModel{
 		inputs:  inputs,

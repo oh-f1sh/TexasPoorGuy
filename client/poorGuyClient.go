@@ -40,7 +40,7 @@ func InitialPoorGuyClient() PoorGuyClient {
 		ControlView:    InitialControlModel(),
 		ScoreBoardView: InitialScoreBoardModel(),
 		ChatView:       InitialChatModel(),
-		Focus:          focusControl,
+		Focus:          focusChat,
 	}
 }
 
@@ -63,9 +63,11 @@ func (m PoorGuyClient) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		switch m.Focus {
 		case focusChat:
-			m.ChatView.Update(msg)
+			c, _ := m.ChatView.Update(msg)
+			m.ChatView = c.(ChatModel)
 		case focusControl:
-			m.ControlView.Update(msg)
+			c, _ := m.ControlView.Update(msg)
+			m.ControlView = c.(ControlModel)
 		}
 	}
 

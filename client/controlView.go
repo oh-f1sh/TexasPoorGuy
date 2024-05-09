@@ -3,7 +3,9 @@ package client
 import (
 	"strings"
 
+	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 var Choices = []string{
@@ -11,43 +13,73 @@ var Choices = []string{
 }
 
 type ControlModel struct {
-	cursor int
-	choice string
+	textarea   textarea.Model
+	cursor     int
+	choice     string
+	raiseValue int
 }
 
 func InitialControlModel() ControlModel {
+	ta := textarea.New()
+	ta.Placeholder = "e.g. 50"
+
+	ta.Prompt = ""
+	ta.CharLimit = 100
+	ta.SetWidth(30)
+	ta.SetHeight(1)
+	ta.FocusedStyle.CursorLine = lipgloss.NewStyle()
+
+	ta.ShowLineNumbers = false
+	ta.KeyMap.InsertNewline.SetEnabled(false)
+
 	return ControlModel{
-		cursor: 0,
-		choice: "",
+		textarea:   ta,
+		cursor:     0,
+		choice:     "",
+		raiseValue: 0,
 	}
 }
 
 func (m ControlModel) Init() tea.Cmd {
-	return nil
+	return textarea.Blink
 }
 
 func (m ControlModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "q", "esc":
+		switch msg.Type {
+		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
-
-		case "enter":
-			// Send the choice on the channel and exit.
+		case tea.KeyEnter:
+			if m.choice == "raise" {
+				break
+			}
 			m.choice = Choices[m.cursor]
-			return m, tea.Quit
-
-		case "down", "j":
+			return m, nil
+		case tea.KeyDown:
 			m.cursor++
 			if m.cursor >= len(Choices) {
 				m.cursor = 0
 			}
-
-		case "up", "k":
+		case tea.KeyUp:
 			m.cursor--
 			if m.cursor < 0 {
 				m.cursor = len(Choices) - 1
+			}
+		}
+		switch m.choice {
+		case "raise":
+			m.textarea.Focus()
+			m.textarea.Update(msg)
+
+			switch msg.Type {
+			case tea.KeyCtrlC, tea.KeyEsc:
+				return m, tea.Quit
+			case tea.KeyEnter:
+				m.choice = ""
+				m.textarea.Reset()
+			default:
+				m.textarea.SetCursor(100)
 			}
 		}
 	}
@@ -56,19 +88,27 @@ func (m ControlModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m ControlModel) View() string {
-	s := strings.Builder{}
-	s.WriteString("Use arrow keys to navigate    \nbetween options.\n\n")
+	if m.choice == "raise" {
+		s := strings.Builder{}
+		s.WriteString("You chose to raise the bet,   \nenter the amount.\n\n\n\n\n")
+		s.WriteString(m.textarea.View())
+		s.WriteString("\n\n\n(press enter to confirm)\n")
+		return s.String()
+	} else {
+		s := strings.Builder{}
+		s.WriteString("Use arrow keys to navigate    \nbetween options.\n\n")
 
-	for i := 0; i < len(Choices); i++ {
-		if m.cursor == i {
-			s.WriteString("(•) ")
-		} else {
-			s.WriteString("( ) ")
+		for i := 0; i < len(Choices); i++ {
+			if m.cursor == i {
+				s.WriteString("(•) ")
+			} else {
+				s.WriteString("( ) ")
+			}
+			s.WriteString(Choices[i])
+			s.WriteString("\n")
 		}
-		s.WriteString(Choices[i])
-		s.WriteString("\n")
-	}
-	s.WriteString("\n(press enter to confirm)\n")
+		s.WriteString("\n(press enter to confirm)\n")
 
-	return s.String()
+		return s.String()
+	}
 }
