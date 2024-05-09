@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"github.com/gorilla/websocket"
+	"github.com/oh-f1sh/TexasPoorGuy/common"
 )
 
 type Request struct {
@@ -15,14 +16,14 @@ type Request struct {
 }
 
 func Login(name, pwd, addr string) {
-	SERVER_ADDR = addr
-	u := url.URL{Scheme: SCHEME, Host: SERVER_ADDR + ":" + PORT, Path: "/ws"}
+	common.SERVER_ADDR = addr
+	u := url.URL{Scheme: common.SCHEME, Host: common.SERVER_ADDR + ":" + common.PORT, Path: "/ws"}
 	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
 		log.Fatal("fatal:", err)
 	}
-	CONN = conn
-	defer CONN.Close()
+	common.CONN = conn
+	defer common.CONN.Close()
 
 	createUserRequest := Request{
 		Type: "create_user",
@@ -31,7 +32,7 @@ func Login(name, pwd, addr string) {
 			"password": pwd,
 		},
 	}
-	err = CONN.WriteJSON(createUserRequest)
+	err = common.CONN.WriteJSON(createUserRequest)
 	if err != nil {
 		log.Fatal("fatal:", err)
 	}
@@ -40,7 +41,7 @@ func Login(name, pwd, addr string) {
 
 func ListenResponse() {
 	for {
-		_, message, err := CONN.ReadMessage()
+		_, message, err := common.CONN.ReadMessage()
 		if err != nil {
 			log.Fatal("fatal:", err)
 		}

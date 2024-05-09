@@ -6,6 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/oh-f1sh/TexasPoorGuy/common"
 )
 
 type LoginModel struct {
@@ -97,8 +98,8 @@ func InitialLoginModel() LoginModel {
 	inputs[name].CharLimit = 20
 	inputs[name].Width = 30
 	inputs[name].Prompt = ""
-	if len(DEFAULTUSERNAME) > 0 {
-		inputs[name].SetValue(DEFAULTUSERNAME)
+	if len(common.DEFAULTUSERNAME) > 0 {
+		inputs[name].SetValue(common.DEFAULTUSERNAME)
 	}
 
 	inputs[pwd] = textinput.New()
@@ -108,8 +109,8 @@ func InitialLoginModel() LoginModel {
 	inputs[pwd].Prompt = ""
 	inputs[pwd].EchoMode = textinput.EchoPassword
 	inputs[pwd].EchoCharacter = '•'
-	if len(DEFAULTPWD) > 0 {
-		inputs[pwd].SetValue(DEFAULTPWD)
+	if len(common.DEFAULTPWD) > 0 {
+		inputs[pwd].SetValue(common.DEFAULTPWD)
 	}
 
 	inputs[address] = textinput.New()
@@ -117,8 +118,8 @@ func InitialLoginModel() LoginModel {
 	inputs[address].CharLimit = 15
 	inputs[address].Width = 20
 	inputs[address].Prompt = ""
-	if len(SERVER_ADDR) > 0 {
-		inputs[address].SetValue(SERVER_ADDR)
+	if len(common.SERVER_ADDR) > 0 {
+		inputs[address].SetValue(common.SERVER_ADDR)
 	}
 
 	return LoginModel{

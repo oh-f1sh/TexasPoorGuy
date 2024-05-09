@@ -4,13 +4,11 @@ import (
 	"io"
 	"os"
 
-	"github.com/oh-f1sh/TexasPoorGuy/client"
+	"github.com/oh-f1sh/TexasPoorGuy/common"
 	"gopkg.in/yaml.v3"
 )
 
 func init() {
-	os.Setenv("RUNEWIDTH_EASTASIAN", "0")
-
 	f, err := os.Open("config.yaml")
 	if err != nil {
 		return
@@ -24,8 +22,10 @@ func init() {
 	if err != nil {
 		return
 	}
-	client.DEFAULTUSERNAME = m["username"]
-	client.DEFAULTPWD = m["password"]
-	client.SERVER_ADDR = m["server"]
-	client.PORT = m["port"]
+	common.DEFAULTUSERNAME = m["username"]
+	common.DEFAULTPWD = m["password"]
+	common.SERVER_ADDR = m["server"]
+	common.PORT = m["port"]
+
+	os.Setenv("RUNEWIDTH_EASTASIAN", "0")
 }
