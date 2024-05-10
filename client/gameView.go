@@ -14,8 +14,7 @@ type GameModel struct {
 
 func InitialGameModel() GameModel {
 	vp := viewport.New(30, 20)
-	message := []string{"Start Round 1", "Big Blind", "Small Blind"}
-	vp.SetContent(strings.Join(message, "\n"))
+	message := []string{}
 	return GameModel{
 		viewport: vp,
 		messages: message,
@@ -27,6 +26,8 @@ func (m GameModel) Init() tea.Cmd {
 }
 
 func (m GameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	m.viewport.SetContent(strings.Join(m.messages, "\n"))
+	m.viewport.GotoBottom()
 	return m, nil
 }
 

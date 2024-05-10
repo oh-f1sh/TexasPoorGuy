@@ -11,7 +11,6 @@ import (
 
 func main() {
 	p := tea.NewProgram(client.InitialLoginModel())
-
 	if _, err := p.Run(); err != nil {
 		log.Fatal(err)
 	}

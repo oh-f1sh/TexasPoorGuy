@@ -2,55 +2,50 @@ package client
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/oh-f1sh/TexasPoorGuy/common"
 )
 
 var docStyle = lipgloss.NewStyle().Margin(0, 2)
+var refreshTimeStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(darkgrey))
+var additonalHelpStyle = lipgloss.NewStyle().
+	Foreground(hotPink).
+	MarginLeft(4)
+
+var ROOM_LIST = make([]Room, 0)
 
 type Room struct {
-	title string
-	desc  string
+	id          int
+	ownerID     int
+	ownerName   string
+	gameType    string
+	playerCount int
 }
 
-func (r Room) Title() string       { return r.title }
-func (r Room) Description() string { return r.desc }
-func (r Room) FilterValue() string { return r.title }
+func (r Room) Title() string { return fmt.Sprintf("%s's Game Room", r.ownerName) }
+func (r Room) Description() string {
+	return fmt.Sprintf("game type: %s, now %d players", r.gameType, r.playerCount)
+}
+func (r Room) FilterValue() string { return r.Title() + r.Description() }
 
 type RoomModel struct {
 	list list.Model
 }
 
 func InitialRoomModel() RoomModel {
-	items := []list.Item{
-		Room{title: "Raspberry Pi’s", desc: "I have ’em all over my house"},
-		Room{title: "Nutella", desc: "It's good on toast"},
-		Room{title: "Bitter melon", desc: "It cools you down"},
-		Room{title: "Nice socks", desc: "And by that I mean socks without holes"},
-		Room{title: "Eight hours of sleep", desc: "I had this once"},
-		Room{title: "Cats", desc: "Usually"},
-		Room{title: "Plantasia, the album", desc: "My plants love it too"},
-		Room{title: "Pour over coffee", desc: "It takes forever to make though"},
-		Room{title: "VR", desc: "Virtual reality...what is there to say?"},
-		Room{title: "Noguchi Lamps", desc: "Such pleasing organic forms"},
-		Room{title: "Linux", desc: "Pretty much the best OS"},
-		Room{title: "Business school", desc: "Just kidding"},
-		Room{title: "Pottery", desc: "Wet clay is a great feeling"},
-		Room{title: "Shampoo", desc: "Nothing like clean hair"},
-		Room{title: "Table tennis", desc: "It’s surprisingly exhausting"},
-		Room{title: "Milk crates", desc: "Great for packing in your extra stuff"},
-		Room{title: "Afternoon tea", desc: "Especially the tea sandwich part"},
-		Room{title: "Stickers", desc: "The thicker the vinyl the better"},
-		Room{title: "20° Weather", desc: "Celsius, not Fahrenheit"},
-		Room{title: "Warm light", desc: "Like around 2700 Kelvin"},
-		Room{title: "The vernal equinox", desc: "The autumnal equinox is pretty good too"},
-		Room{title: "Gaffer’s tape", desc: "Basically sticky fabric"},
-		Room{title: "Terrycloth", desc: "In other words, towel fabric"},
+	items := []list.Item{}
+	ListRoom()
+	<-common.LIST_ROOM_SIGNAL
+	for _, v := range ROOM_LIST {
+		items = append(items, v)
 	}
 	l := list.New(items, list.NewDefaultDelegate(), 0, 0)
 	l.Title = "Texas Poor Guy - Room List"
+	l.SetSize(60, 40)
 	m := RoomModel{list: l}
 
 	return m
@@ -64,14 +59,28 @@ func (m RoomModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
-		case tea.KeyCtrlC:
+		case tea.KeyEsc, tea.KeyCtrlC:
 			return m, tea.Quit
 		case tea.KeyEnter:
-			fmt.Println("chose", m.list.SelectedItem())
+			if len(ROOM_LIST) > 0 {
+				JoinRoom(ROOM_LIST[m.list.Index()].id)
+				return InitialPoorGuyClient(), nil
+			}
 		}
-	case tea.WindowSizeMsg:
-		h, v := docStyle.GetFrameSize()
-		m.list.SetSize(msg.Width-h, msg.Height-v)
+		switch msg.String() {
+		case "n":
+			CreateRoom()
+			<-common.CREATE_ROOM_SIGNAL
+			return InitialPoorGuyClient(), nil
+		case "r":
+			ListRoom()
+			<-common.LIST_ROOM_SIGNAL
+			items := []list.Item{}
+			for _, v := range ROOM_LIST {
+				items = append(items, v)
+			}
+			m.list.SetItems(items)
+		}
 	}
 
 	var cmd tea.Cmd
@@ -80,5 +89,5 @@ func (m RoomModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m RoomModel) View() string {
-	return docStyle.Render(m.list.View())
+	return docStyle.Render(m.list.View()) + "\n\n" + additonalHelpStyle.Render("Enter	join room	|	n	new room\nr		refresh list"+"\n\n"+refreshTimeStyle.Render("last refreshed at: "+time.Now().Format("15:04:05")))
 }

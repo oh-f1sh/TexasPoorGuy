@@ -5,6 +5,8 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+var POOR_GUY_CLIENT *PoorGuyClient
+
 var (
 	UnfocusedStyle = lipgloss.NewStyle().
 			BorderStyle(lipgloss.NormalBorder()).
@@ -33,7 +35,7 @@ type PoorGuyClient struct {
 }
 
 func InitialPoorGuyClient() PoorGuyClient {
-	return PoorGuyClient{
+	cli := PoorGuyClient{
 		CardView:       InitialCardModel(),
 		HandCardView:   InitialHandCardModel(),
 		GameView:       InitialGameModel(),
@@ -42,6 +44,8 @@ func InitialPoorGuyClient() PoorGuyClient {
 		ChatView:       InitialChatModel(),
 		Focus:          focusChat,
 	}
+	POOR_GUY_CLIENT = &cli
+	return cli
 }
 
 func (m PoorGuyClient) Init() tea.Cmd {
@@ -54,6 +58,8 @@ func (m PoorGuyClient) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
+
+		// switch window focus
 		case tea.KeyTab:
 			if m.Focus == focusChat {
 				m.Focus = focusControl

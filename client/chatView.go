@@ -12,6 +12,7 @@ import (
 
 type ChatModel struct {
 	viewport    viewport.Model
+	usernames   []string
 	messages    []string
 	textarea    textarea.Model
 	senderStyle lipgloss.Style

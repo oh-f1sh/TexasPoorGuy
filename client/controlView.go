@@ -6,6 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/oh-f1sh/TexasPoorGuy/common"
 )
 
 var Choices = []string{
@@ -67,6 +68,18 @@ func (m ControlModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor = len(Choices) - 1
 			}
 		}
+
+		switch msg.String() {
+		case "e":
+			// exit room
+			return InitialRoomModel(), nil
+		case "s":
+			// owner can start game
+			if common.USERID == common.ROOMOWNERID {
+				StartGame()
+			}
+		}
+
 		switch m.choice {
 		case "raise":
 			m.textarea.Focus()
