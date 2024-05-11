@@ -7,7 +7,6 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/oh-f1sh/TexasPoorGuy/common"
 )
 
 var docStyle = lipgloss.NewStyle().Margin(0, 2)
@@ -39,7 +38,7 @@ type RoomModel struct {
 func InitialRoomModel() RoomModel {
 	items := []list.Item{}
 	ListRoom()
-	<-common.LIST_ROOM_SIGNAL
+	<-LIST_ROOM_SIGNAL
 	for _, v := range ROOM_LIST {
 		items = append(items, v)
 	}
@@ -64,17 +63,19 @@ func (m RoomModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyEnter:
 			if len(ROOM_LIST) > 0 {
 				JoinRoom(ROOM_LIST[m.list.Index()].id)
-				return InitialPoorGuyClient(), nil
+				cli := InitialPoorGuyClient()
+				return cli, cli.Init()
 			}
 		}
 		switch msg.String() {
 		case "n":
 			CreateRoom()
-			<-common.CREATE_ROOM_SIGNAL
-			return InitialPoorGuyClient(), nil
+			<-CREATE_ROOM_SIGNAL
+			cli := InitialPoorGuyClient()
+			return cli, cli.Init()
 		case "r":
 			ListRoom()
-			<-common.LIST_ROOM_SIGNAL
+			<-LIST_ROOM_SIGNAL
 			items := []list.Item{}
 			for _, v := range ROOM_LIST {
 				items = append(items, v)

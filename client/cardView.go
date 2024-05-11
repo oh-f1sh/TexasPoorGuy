@@ -6,6 +6,12 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+type communityCardUpdate struct {
+	card  []string
+	color []string
+	bg    []string
+}
+
 type CardModel struct {
 	viewport   []viewport.Model
 	card       []string
@@ -71,20 +77,29 @@ func InitialCardModel() CardModel {
 }
 
 func (m CardModel) Init() tea.Cmd {
-	return nil
+	return waitForCommunityCard()
 }
 
 func (m CardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	for i := range m.card {
-		m.viewport[i].SetContent(m.card[i])
-		m.viewport[i].Style = lipgloss.NewStyle().
-			Background(lipgloss.Color(m.background[i])).
-			Foreground(lipgloss.Color(m.color[i])).
-			Align(lipgloss.Center).
-			Margin(1).
-			Bold(true)
+	switch msgTyp := msg.(type) {
+	case tea.KeyMsg:
+		switch msgTyp.Type {
+		case tea.KeyCtrlC, tea.KeyEsc:
+			return m, tea.Quit
+		}
+	case communityCardUpdate:
+		cards := msg.(communityCardUpdate)
+		for i := range m.card {
+			m.viewport[i].SetContent(cards.card[i])
+			m.viewport[i].Style = lipgloss.NewStyle().
+				Background(lipgloss.Color(cards.bg[i])).
+				Foreground(lipgloss.Color(cards.color[i])).
+				Align(lipgloss.Center).
+				Margin(1).
+				Bold(true)
+		}
 	}
-	return m, nil
+	return m, waitForCommunityCard()
 }
 
 func (m CardModel) View() string {
@@ -95,6 +110,18 @@ func (m CardModel) View() string {
 		m.viewport[card4].View(),
 		m.viewport[card5].View(),
 	)
+}
+
+func waitForCommunityCard() tea.Cmd {
+	return func() tea.Msg {
+		return <-COMMUNITY_CARD_CHAN
+	}
+}
+
+type handCardUpdate struct {
+	card  []string
+	color []string
+	bg    []string
 }
 
 type HandCardModel struct {
@@ -137,25 +164,35 @@ func InitialHandCardModel() HandCardModel {
 }
 
 func (m HandCardModel) Init() tea.Cmd {
-	return nil
+	return waitForHandCard()
 }
 
 func (m HandCardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	m.viewport[card1].SetContent(m.card[card1])
-	m.viewport[card1].Style = lipgloss.NewStyle().
-		Background(lipgloss.Color(m.background[card1])).
-		Foreground(lipgloss.Color(m.color[card1])).
-		Align(lipgloss.Center).
-		Margin(1).
-		Bold(true)
-	m.viewport[card2].SetContent(m.card[card2])
-	m.viewport[card2].Style = lipgloss.NewStyle().
-		Background(lipgloss.Color(m.background[card2])).
-		Foreground(lipgloss.Color(m.color[card2])).
-		Align(lipgloss.Center).
-		Margin(1).
-		Bold(true)
-	return m, nil
+	switch msgTyp := msg.(type) {
+	case tea.KeyMsg:
+		switch msgTyp.Type {
+		case tea.KeyCtrlC, tea.KeyEsc:
+			return m, tea.Quit
+		}
+	case handCardUpdate:
+		cards := msg.(handCardUpdate)
+		m.viewport[card1].SetContent(cards.card[card1])
+		m.viewport[card1].Style = lipgloss.NewStyle().
+			Background(lipgloss.Color(cards.bg[card1])).
+			Foreground(lipgloss.Color(cards.color[card1])).
+			Align(lipgloss.Center).
+			Margin(1).
+			Bold(true)
+		m.viewport[card2].SetContent(cards.card[card2])
+		m.viewport[card2].Style = lipgloss.NewStyle().
+			Background(lipgloss.Color(cards.bg[card2])).
+			Foreground(lipgloss.Color(cards.color[card2])).
+			Align(lipgloss.Center).
+			Margin(1).
+			Bold(true)
+	}
+
+	return m, waitForHandCard()
 }
 
 func (m HandCardModel) View() string {
@@ -163,4 +200,10 @@ func (m HandCardModel) View() string {
 		m.viewport[card1].View(),
 		m.viewport[card2].View(),
 	)
+}
+
+func waitForHandCard() tea.Cmd {
+	return func() tea.Msg {
+		return <-HAND_CARD_CHAN
+	}
 }

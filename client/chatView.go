@@ -2,20 +2,23 @@ package client
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/oh-f1sh/TexasPoorGuy/common"
 )
 
+type chatUpdate struct {
+	content string
+}
+
 type ChatModel struct {
-	viewport    viewport.Model
-	usernames   []string
-	messages    []string
-	textarea    textarea.Model
-	senderStyle lipgloss.Style
+	viewport         viewport.Model
+	textarea         textarea.Model
+	senderStyle      lipgloss.Style
+	otherSenderStyle lipgloss.Style
 }
 
 func InitialChatModel() ChatModel {
@@ -41,15 +44,18 @@ Type a message and press Enter to send.`)
 	ta.KeyMap.InsertNewline.SetEnabled(false)
 
 	return ChatModel{
-		textarea:    ta,
-		messages:    []string{},
-		viewport:    vp,
-		senderStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
+		textarea:         ta,
+		viewport:         vp,
+		senderStyle:      lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
+		otherSenderStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("11")),
 	}
 }
 
 func (m ChatModel) Init() tea.Cmd {
-	return textarea.Blink
+	return tea.Batch(
+		textarea.Blink,
+		waitForIncomingMessage(),
+	)
 }
 
 func (m ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -59,19 +65,21 @@ func (m ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	)
 
 	m.textarea, tiCmd = m.textarea.Update(msg)
-	m.viewport, vpCmd = m.viewport.Update(msg)
 
-	switch msg := msg.(type) {
+	switch msgTyp := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.Type {
+		switch msgTyp.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
 		case tea.KeyEnter:
-			m.messages = append(m.messages, m.senderStyle.Render("You: ")+m.textarea.Value())
-			m.viewport.SetContent(strings.Join(m.messages, "\n"))
+			SendMsg(common.ROOMID, m.textarea.Value())
 			m.textarea.Reset()
-			m.viewport.GotoBottom()
 		}
+	case chatUpdate:
+		m.viewport.SetContent(msg.(chatUpdate).content)
+		m.viewport.GotoBottom()
+		m.viewport, vpCmd = m.viewport.Update(msg)
+		return m, tea.Batch(tiCmd, vpCmd, waitForIncomingMessage())
 	}
 
 	return m, tea.Batch(tiCmd, vpCmd)
@@ -83,4 +91,13 @@ func (m ChatModel) View() string {
 		m.viewport.View(),
 		m.textarea.View(),
 	) + "\n\n"
+}
+
+func waitForIncomingMessage() tea.Cmd {
+	return func() tea.Msg {
+		<-SEND_ROOM_MSG_SIGNAL
+		return chatUpdate{
+			content: common.ROOM_CHAT,
+		}
+	}
 }

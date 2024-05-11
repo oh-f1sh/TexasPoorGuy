@@ -49,10 +49,19 @@ func InitialPoorGuyClient() PoorGuyClient {
 }
 
 func (m PoorGuyClient) Init() tea.Cmd {
-	return nil
+	return tea.Batch(
+		m.CardView.Init(),
+		m.HandCardView.Init(),
+		m.GameView.Init(),
+		m.ControlView.Init(),
+		m.ScoreBoardView.Init(),
+		m.ChatView.Init(),
+	)
 }
 
 func (m PoorGuyClient) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	cmds := make([]tea.Cmd, 0)
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
@@ -69,15 +78,29 @@ func (m PoorGuyClient) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		switch m.Focus {
 		case focusChat:
-			c, _ := m.ChatView.Update(msg)
+			c, cmd := m.ChatView.Update(msg)
 			m.ChatView = c.(ChatModel)
+			cmds = append(cmds, cmd)
 		case focusControl:
-			c, _ := m.ControlView.Update(msg)
+			c, cmd := m.ControlView.Update(msg)
 			m.ControlView = c.(ControlModel)
+			cmds = append(cmds, cmd)
 		}
+	case chatUpdate:
+		c, cmd := m.ChatView.Update(msg)
+		m.ChatView = c.(ChatModel)
+		cmds = append(cmds, cmd)
+	case gameUpdate:
+		c, cmd := m.GameView.Update(msg)
+		m.GameView = c.(GameModel)
+		cmds = append(cmds, cmd)
+	case handCardUpdate:
+		c, cmd := m.HandCardView.Update(msg)
+		m.HandCardView = c.(HandCardModel)
+		cmds = append(cmds, cmd)
 	}
 
-	return m, nil
+	return m, tea.Batch(cmds...)
 }
 
 func (m PoorGuyClient) View() string {

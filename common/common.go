@@ -21,12 +21,7 @@ var (
 	TOKEN       = ""
 	ROOMID      = -1
 	ROOMOWNERID = 0
-
-	LOGIN_SIGNAL         = make(chan int)
-	LIST_ROOM_SIGNAL     = make(chan int)
-	JOIN_ROOM_SIGNAL     = make(chan int)
-	CREATE_ROOM_SIGNAL   = make(chan int)
-	SEND_ROOM_MSG_SIGNAL = make(chan int)
+	ROOM_CHAT   = ""
 
 	LOG_FILE *os.File
 )

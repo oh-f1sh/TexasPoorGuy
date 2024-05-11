@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -75,11 +76,27 @@ func SendMsg(id int, msg string) {
 	req := Request{
 		Type: "send_room_msg",
 		Data: map[string]interface{}{
-			"room_id": 1,
+			"room_id": id,
 			"msg":     msg,
 		},
 		Token: common.TOKEN,
 	}
+	err := common.CONN.WriteJSON(req)
+	if err != nil {
+		log.Fatal("fatal:", err)
+	}
+}
+
+func UserAction(action string, amount int) {
+	req := Request{
+		Type: "user_action",
+		Data: map[string]interface{}{
+			"action": action,
+			"amount": amount,
+		},
+		Token: common.TOKEN,
+	}
+	common.LOG_FILE.WriteString(fmt.Sprintf("Now: %v, 当前用户:%v, %v, 正在将操作发送给服务器，操作内容为:%v\n", time.Now().Format(time.RFC3339Nano), common.USERNAME, common.USERID, req))
 	err := common.CONN.WriteJSON(req)
 	if err != nil {
 		log.Fatal("fatal:", err)
@@ -121,11 +138,7 @@ func ListenResponse() {
 		}
 
 		var resp map[string]interface{}
-		err = json.Unmarshal(message, &resp)
-		if err != nil {
-			common.LOG_FILE.WriteString(fmt.Sprintf("Now: %v, 当前用户:%v, %v, 服务器返回错误：%v\n", time.Now().Format(time.RFC3339Nano), common.USERNAME, common.USERID, err))
-			continue
-		}
+		_ = json.Unmarshal(message, &resp)
 		common.LOG_FILE.WriteString(fmt.Sprintf("Now: %v, 当前用户:%v, %v, 服务器已返回操作，操作类型：%v\n", time.Now().Format(time.RFC3339Nano), common.USERNAME, common.USERID, resp["type"]))
 		switch resp["type"] {
 		case "login":
@@ -136,8 +149,8 @@ func ListenResponse() {
 			HandleJoinRoomResp(resp)
 		case "create_room":
 			HandleCreateRoomResp(resp)
-		case "send_room_msg":
-			HandleSendRoomMsgResp(resp)
+		case "room_chat":
+			HandleRoomChatResp(resp)
 		case "game_info":
 			HandleGameInfoResp(resp)
 		case "list_room_player":
@@ -157,7 +170,7 @@ func HandleLoginResp(resp map[string]interface{}) {
 	userID, _ := resp["data"].(map[string]interface{})["user_id"].(int)
 	common.TOKEN = tk
 	common.USERID = userID
-	common.LOGIN_SIGNAL <- 1
+	LOGIN_SIGNAL <- 1
 }
 
 func HandleListRoomResp(resp map[string]interface{}) {
@@ -177,7 +190,7 @@ func HandleListRoomResp(resp map[string]interface{}) {
 			playerCount: len(playerList),
 		})
 	}
-	common.LIST_ROOM_SIGNAL <- 1
+	LIST_ROOM_SIGNAL <- 1
 }
 
 func HandleCreateRoomResp(resp map[string]interface{}) {
@@ -185,7 +198,7 @@ func HandleCreateRoomResp(resp map[string]interface{}) {
 	roomID := int(data["id"].(float64))
 	common.ROOMID = roomID
 	common.ROOMOWNERID = common.USERID
-	common.CREATE_ROOM_SIGNAL <- 1
+	CREATE_ROOM_SIGNAL <- 1
 }
 
 func HandleJoinRoomResp(resp map[string]interface{}) {
@@ -196,65 +209,65 @@ func HandleJoinRoomResp(resp map[string]interface{}) {
 	}
 	common.ROOMID = int(data[roomID].(map[string]interface{})["id"].(float64))
 	common.ROOMOWNERID = int(data[roomID].(map[string]interface{})["owner"].(map[string]interface{})["ID"].(float64))
-	common.JOIN_ROOM_SIGNAL <- 1
 }
 
-func HandleSendRoomMsgResp(resp map[string]interface{}) {
+func HandleRoomChatResp(resp map[string]interface{}) {
 	data := resp["data"].([]interface{})
-	POOR_GUY_CLIENT.ChatView.usernames = []string{}
-	POOR_GUY_CLIENT.ChatView.messages = []string{}
+	msgs := []string{}
+	names := []string{}
 	for _, v := range data {
 		msg := v.(map[string]interface{})
-		POOR_GUY_CLIENT.ChatView.usernames = append(POOR_GUY_CLIENT.ChatView.messages, msg["user_name"].(string))
-		POOR_GUY_CLIENT.ChatView.messages = append(POOR_GUY_CLIENT.ChatView.messages, msg["message"].(string))
+		names = append(names, msg["user_name"].(string))
+		msgs = append(msgs, msg["message"].(string))
 	}
-	POOR_GUY_CLIENT.ChatView.Update(nil)
+	content := make([]string, 0)
+	for i := range msgs {
+		if names[i] == common.USERNAME {
+			content = append(content, POOR_GUY_CLIENT.ChatView.senderStyle.Render(names[i])+": "+msgs[i])
+		} else {
+			content = append(content, POOR_GUY_CLIENT.ChatView.otherSenderStyle.Render(names[i])+": "+msgs[i])
+		}
+	}
+	common.ROOM_CHAT = strings.Join(content, "\n")
+	SEND_ROOM_MSG_SIGNAL <- 1
 }
 
 func HandleGameInfoResp(resp map[string]interface{}) {
-	fmt.Println("\n\n\n\n\n\n\n\n\n", resp)
+	common.LOG_FILE.WriteString(fmt.Sprintf("Now: %v, 当前用户:%v, %v, 开始处理游戏对局信息\n", time.Now().Format(time.RFC3339Nano), common.USERNAME, common.USERID))
 	data := resp["data"].(map[string]interface{})
 	game := data["game"].(map[string]interface{})
 	game_gameInfo := game["game_info"].(map[string]interface{})
-	player := data["game"].(map[string]interface{})
+	player := data["player"].(map[string]interface{})
 
 	// update game msg
-	gameMsg := resp["message"].(string)
-	POOR_GUY_CLIENT.GameView.messages = append(POOR_GUY_CLIENT.GameView.messages, gameMsg)
-	POOR_GUY_CLIENT.GameView.Update(nil)
+	common.LOG_FILE.WriteString(fmt.Sprintf("Now: %v, 当前用户:%v, %v, 游戏对局信息更新: %v\n", time.Now().Format(time.RFC3339Nano), common.USERNAME, common.USERID, resp["message"].(string)))
+	GAME_MSG_CHAN <- resp["message"].(string)
 
 	// update hand card
+	hcUpdate := handCardUpdate{
+		card:  []string{"", ""},
+		color: []string{black, black},
+		bg:    []string{darkgrey, darkgrey},
+	}
 	if player["hand"] != nil {
 		cards := player["hand"].([]interface{})
-		POOR_GUY_CLIENT.HandCardView.card = []string{
-			cards[0].(map[string]interface{})["desc"].(string) + "\n" + suitMap[int(cards[0].(map[string]interface{})["suit"].(float64))],
-			cards[1].(map[string]interface{})["desc"].(string) + "\n" + suitMap[int(cards[1].(map[string]interface{})["suit"].(float64))],
-		}
-		POOR_GUY_CLIENT.HandCardView.color = []string{
-			suitColor[int(cards[0].(map[string]interface{})["suit"].(float64))],
-			suitColor[int(cards[1].(map[string]interface{})["suit"].(float64))],
-		}
-		POOR_GUY_CLIENT.HandCardView.background = []string{
-			white,
-			white,
-		}
-	} else {
-		POOR_GUY_CLIENT.HandCardView.card = []string{
-			"",
-			"",
-		}
-		POOR_GUY_CLIENT.HandCardView.color = []string{
-			black,
-			black,
-		}
-		POOR_GUY_CLIENT.HandCardView.background = []string{
-			darkgrey,
-			darkgrey,
+		if len(cards) == 2 {
+			hcUpdate.card[card1] = cards[card1].(map[string]interface{})["desc"].(string) + "\n" + suitMap[int(cards[card1].(map[string]interface{})["suit"].(float64))]
+			hcUpdate.card[card2] = cards[card2].(map[string]interface{})["desc"].(string) + "\n" + suitMap[int(cards[card2].(map[string]interface{})["suit"].(float64))]
+			hcUpdate.color[card1] = suitColor[int(cards[card1].(map[string]interface{})["suit"].(float64))]
+			hcUpdate.color[card2] = suitColor[int(cards[card2].(map[string]interface{})["suit"].(float64))]
+			hcUpdate.bg = []string{white, white}
 		}
 	}
-	POOR_GUY_CLIENT.HandCardView.Update(nil)
+	common.LOG_FILE.WriteString(fmt.Sprintf("Now: %v, 当前用户:%v, %v, 手牌更新: %+v\n", time.Now().Format(time.RFC3339Nano), common.USERNAME, common.USERID, hcUpdate))
+	HAND_CARD_CHAN <- hcUpdate
 
 	// update community card
+	ccUpdate := communityCardUpdate{
+		card:  []string{"", "", "", "", ""},
+		color: []string{black, black, black, black, black},
+		bg:    []string{darkgrey, darkgrey, darkgrey, darkgrey, darkgrey},
+	}
 	if game_gameInfo["board"] != nil {
 		for i, card := range game_gameInfo["board"].([]interface{}) {
 			c := card.(map[string]interface{})
@@ -262,14 +275,9 @@ func HandleGameInfoResp(resp map[string]interface{}) {
 			POOR_GUY_CLIENT.CardView.color[i] = suitColor[int(c["suit"].(float64))]
 			POOR_GUY_CLIENT.CardView.background[i] = white
 		}
-	} else {
-		for i := range POOR_GUY_CLIENT.CardView.card {
-			POOR_GUY_CLIENT.CardView.card[i] = ""
-			POOR_GUY_CLIENT.CardView.color[i] = black
-			POOR_GUY_CLIENT.CardView.background[i] = darkgrey
-		}
 	}
-	POOR_GUY_CLIENT.CardView.Update(nil)
+	common.LOG_FILE.WriteString(fmt.Sprintf("Now: %v, 当前用户:%v, %v, 牌河更新: %+v\n", time.Now().Format(time.RFC3339Nano), common.USERNAME, common.USERID, ccUpdate))
+	COMMUNITY_CARD_CHAN <- ccUpdate
 
 	// update scoreboard
 

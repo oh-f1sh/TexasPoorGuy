@@ -29,7 +29,7 @@ func (l LoginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyEnter:
 			if l.focused == len(l.inputs)-1 {
 				Login(l.inputs[name].Value(), l.inputs[pwd].Value(), l.inputs[address].Value())
-				isLogin := <-common.LOGIN_SIGNAL
+				isLogin := <-LOGIN_SIGNAL
 				if isLogin == 1 {
 					return InitialRoomModel(), tea.Batch(cmds...)
 				}

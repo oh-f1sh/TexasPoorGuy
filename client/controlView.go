@@ -1,6 +1,7 @@
 package client
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textarea"
@@ -89,11 +90,25 @@ func (m ControlModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case tea.KeyCtrlC, tea.KeyEsc:
 				return m, tea.Quit
 			case tea.KeyEnter:
+				amount, _ := strconv.Atoi(m.textarea.Value())
+				UserAction(m.choice, amount)
 				m.choice = ""
 				m.textarea.Reset()
 			default:
 				m.textarea.SetCursor(100)
 			}
+		case "call":
+			UserAction(m.choice, 0)
+			m.choice = ""
+		case "allin":
+			UserAction(m.choice, 0)
+			m.choice = ""
+		case "fold":
+			UserAction(m.choice, 0)
+			m.choice = ""
+		case "check":
+			UserAction(m.choice, 0)
+			m.choice = ""
 		}
 	}
 
