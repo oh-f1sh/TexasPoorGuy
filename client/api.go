@@ -286,8 +286,7 @@ func HandleGameInfoResp(resp map[string]interface{}) {
 	for i, player := range game_players {
 		p := player.(map[string]interface{})
 		s := strings.Builder{}
-		state := int(p["state"].(float64))
-		if state == 0 {
+		if i == int(game_gameInfo["action_player"].(float64)) {
 			s.WriteString(waitingPlayerStyle.Render(strconv.Itoa(i+1) + "."))
 			s.WriteString(waitingPlayerNameStyle.Render(p["player"].(map[string]interface{})["Username"].(string) + ":"))
 			s.WriteString(strconv.Itoa(int(p["player"].(map[string]interface{})["chip"].(float64))) + ", ")
