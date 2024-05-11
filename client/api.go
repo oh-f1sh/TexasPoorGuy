@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -280,7 +281,47 @@ func HandleGameInfoResp(resp map[string]interface{}) {
 	COMMUNITY_CARD_CHAN <- ccUpdate
 
 	// update scoreboard
+	scoreUpdate := scoreboardUpdate{scores: []string{}}
+	game_players := game["players"].([]interface{})
+	for i, player := range game_players {
+		p := player.(map[string]interface{})
+		s := strings.Builder{}
+		state := int(p["state"].(float64))
+		if state == 0 {
+			s.WriteString(waitingPlayerStyle.Render(strconv.Itoa(i+1) + "."))
+			s.WriteString(waitingPlayerNameStyle.Render(p["player"].(map[string]interface{})["Username"].(string) + ":"))
+			s.WriteString(strconv.Itoa(int(p["player"].(map[string]interface{})["chip"].(float64))) + ", ")
+			s.WriteString("bets " + strconv.Itoa(int(p["bets"].(float64))) + ", ")
+			s.WriteString("bets " + strconv.Itoa(int(p["bets"].(float64))) + ", ")
+			if p["folded"].(bool) {
+				s.WriteString("state: folded")
+			} else if p["allIn"].(bool) {
+				s.WriteString("state: all in")
+			} else {
+				s.WriteString("state: betting")
+			}
+			scoreUpdate.scores = append(scoreUpdate.scores, s.String())
+		} else {
+			s.WriteString(playingPlayerStyle.Render(strconv.Itoa(i+1) + "."))
+			s.WriteString(playingPlayerNameStyle.Render(p["player"].(map[string]interface{})["Username"].(string) + ":"))
+			s.WriteString(strconv.Itoa(int(p["player"].(map[string]interface{})["chip"].(float64))) + ", ")
+			s.WriteString("bets " + strconv.Itoa(int(p["bets"].(float64))) + ", ")
+			s.WriteString("bets " + strconv.Itoa(int(p["bets"].(float64))) + ", ")
+			if p["folded"].(bool) {
+				s.WriteString("state: folded")
+			} else if p["allIn"].(bool) {
+				s.WriteString("state: all in")
+			} else {
+				s.WriteString("state: betting")
+			}
+			scoreUpdate.scores = append(scoreUpdate.scores, s.String())
+		}
+	}
+	scoreUpdate.scores = append(scoreUpdate.scores, "Pot: "+strconv.Itoa(int(game_gameInfo["pot"].(float64))))
+	common.LOG_FILE.WriteString(fmt.Sprintf("Now: %v, 当前用户:%v, %v, 下注信息更新: %+v\n", time.Now().Format(time.RFC3339Nano), common.USERNAME, common.USERID, scoreUpdate))
+	SCOREBOARD_CHAN <- scoreUpdate
 
 	// update control area
 
+	common.LOG_FILE.WriteString(fmt.Sprintf("Now: %v, 当前用户:%v, %v, 游戏对局信息已全部更新完毕\n", time.Now().Format(time.RFC3339Nano), common.USERNAME, common.USERID))
 }

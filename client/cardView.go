@@ -41,10 +41,12 @@ const (
 	card4
 	card5
 
-	darkgrey = "8"
-	black    = "16"
-	red      = "1"
-	white    = "255"
+	darkgrey  = "238"
+	lightgrey = "242"
+	black     = "16"
+	red       = "1"
+	white     = "255"
+	lightpink = "207"
 )
 
 func InitialCardModel() CardModel {

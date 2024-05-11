@@ -10,4 +10,5 @@ var (
 	GAME_MSG_CHAN       = make(chan string, 1)
 	HAND_CARD_CHAN      = make(chan handCardUpdate, 1)
 	COMMUNITY_CARD_CHAN = make(chan communityCardUpdate, 1)
+	SCOREBOARD_CHAN     = make(chan scoreboardUpdate, 1)
 )

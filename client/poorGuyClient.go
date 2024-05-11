@@ -98,6 +98,14 @@ func (m PoorGuyClient) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		c, cmd := m.HandCardView.Update(msg)
 		m.HandCardView = c.(HandCardModel)
 		cmds = append(cmds, cmd)
+	case communityCardUpdate:
+		c, cmd := m.CardView.Update(msg)
+		m.CardView = c.(CardModel)
+		cmds = append(cmds, cmd)
+	case scoreboardUpdate:
+		c, cmd := m.ScoreBoardView.Update(msg)
+		m.ScoreBoardView = c.(ScoreBoardModel)
+		cmds = append(cmds, cmd)
 	}
 
 	return m, tea.Batch(cmds...)

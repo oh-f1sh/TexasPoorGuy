@@ -57,7 +57,6 @@ func (m ControlModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				break
 			}
 			m.choice = Choices[m.cursor]
-			return m, nil
 		case tea.KeyDown:
 			m.cursor++
 			if m.cursor >= len(Choices) {
