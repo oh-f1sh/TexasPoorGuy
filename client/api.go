@@ -154,6 +154,8 @@ func ListenResponse() {
 			HandleRoomChatResp(resp)
 		case "game_info":
 			HandleGameInfoResp(resp)
+		case "game_info_error":
+			HandleGameInfoErrorResp(resp)
 		case "list_room_player":
 
 		case "quit_room":
@@ -323,4 +325,10 @@ func HandleGameInfoResp(resp map[string]interface{}) {
 	// update control area
 
 	common.LOG_FILE.WriteString(fmt.Sprintf("Now: %v, 当前用户:%v, %v, 游戏对局信息已全部更新完毕\n", time.Now().Format(time.RFC3339Nano), common.USERNAME, common.USERID))
+}
+
+func HandleGameInfoErrorResp(resp map[string]interface{}) {
+	// update game error msg
+	common.LOG_FILE.WriteString(fmt.Sprintf("Now: %v, 当前用户:%v, %v, 游戏操作有误，返回错误提示: %v\n", time.Now().Format(time.RFC3339Nano), common.USERNAME, common.USERID, resp["message"].(string)))
+	GAME_MSG_CHAN <- resp["message"].(string)
 }
