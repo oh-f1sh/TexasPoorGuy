@@ -5,7 +5,6 @@ import (
 
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 type gameUpdate struct {
@@ -46,9 +45,10 @@ func (m GameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		styleMessages := make([]string, 0)
 		for i := range m.messages {
 			if i != len(m.messages)-1 {
-				styleMessages = append(styleMessages, lipgloss.NewStyle().
-					Foreground(lipgloss.Color(lightgrey)).
-					Render(m.messages[i]))
+				// styleMessages = append(styleMessages, lipgloss.NewStyle().
+				// 	Foreground(lipgloss.Color(lightgrey)).
+				// 	Render(m.messages[i]))
+				styleMessages = append(styleMessages, m.messages[i])
 			} else {
 				styleMessages = append(styleMessages, m.messages[i])
 			}
