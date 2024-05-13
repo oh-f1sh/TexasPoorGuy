@@ -29,7 +29,7 @@ func InitialChatModel() ChatModel {
 	ta.Prompt = "┃ "
 	ta.CharLimit = 280
 
-	ta.SetWidth(30)
+	ta.SetWidth(40)
 	ta.SetHeight(3)
 
 	// Remove cursor line styling
@@ -37,7 +37,7 @@ func InitialChatModel() ChatModel {
 
 	ta.ShowLineNumbers = false
 
-	vp := viewport.New(30, 19)
+	vp := viewport.New(40, 16)
 	vp.SetContent(`Welcome to the chat room!
 Type a message and press Enter to send.`)
 

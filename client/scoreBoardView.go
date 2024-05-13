@@ -23,7 +23,7 @@ type ScoreBoardModel struct {
 }
 
 func InitialScoreBoardModel() ScoreBoardModel {
-	vp := viewport.New(30, 12)
+	vp := viewport.New(40, 25)
 	scores := []string{}
 	vp.SetContent(strings.Join(scores, "\n"))
 	return ScoreBoardModel{

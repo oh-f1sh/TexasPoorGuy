@@ -5,6 +5,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type gameUpdate struct {
@@ -17,7 +18,7 @@ type GameModel struct {
 }
 
 func InitialGameModel() GameModel {
-	vp := viewport.New(30, 20)
+	vp := viewport.New(50, 30)
 	message := []string{}
 	return GameModel{
 		viewport: vp,
@@ -39,10 +40,20 @@ func (m GameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case gameUpdate:
 		m.messages = append(m.messages, msg.(gameUpdate).msg)
-		if len(m.messages) > 3 {
-			m.messages = m.messages[len(m.messages)-3:]
+		if len(m.messages) > 4 {
+			m.messages = m.messages[len(m.messages)-4:]
 		}
-		m.viewport.SetContent(strings.Join(m.messages, "\n"))
+		styleMessages := make([]string, 0)
+		for i := range m.messages {
+			if i != len(m.messages)-1 {
+				styleMessages = append(styleMessages, lipgloss.NewStyle().
+					Foreground(lipgloss.Color(lightgrey)).
+					Render(m.messages[i]))
+			} else {
+				styleMessages = append(styleMessages, m.messages[i])
+			}
+		}
+		m.viewport.SetContent(strings.Join(styleMessages, "\n"))
 		m.viewport, vpCmd = m.viewport.Update(msg)
 	}
 	return m, tea.Batch(vpCmd, waitForGameMsg())

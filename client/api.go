@@ -160,6 +160,8 @@ func ListenResponse() {
 			HandleGameInfoResp(resp)
 		case "game_info_error":
 			HandleGameInfoErrorResp(resp)
+		case "game_end":
+			HandleGameEndResp(resp)
 		case "list_room_player":
 
 		case "quit_room":
@@ -322,7 +324,7 @@ func HandleGameInfoResp(resp map[string]interface{}) {
 			scoreUpdate.scores = append(scoreUpdate.scores, s.String())
 		}
 	}
-	scoreUpdate.scores = append(scoreUpdate.scores, "Pot: "+strconv.Itoa(int(game_gameInfo["pot"].(float64))))
+	scoreUpdate.scores = append(scoreUpdate.scores, "\nPot: "+strconv.Itoa(int(game_gameInfo["pot"].(float64))))
 	common.LOG_FILE.WriteString(fmt.Sprintf("Now: %v, 当前用户:%v, %v, 下注信息更新: %+v\n", time.Now().Format(time.RFC3339Nano), common.USERNAME, common.USERID, scoreUpdate))
 	SCOREBOARD_CHAN <- scoreUpdate
 
@@ -334,5 +336,11 @@ func HandleGameInfoResp(resp map[string]interface{}) {
 func HandleGameInfoErrorResp(resp map[string]interface{}) {
 	// update game error msg
 	common.LOG_FILE.WriteString(fmt.Sprintf("Now: %v, 当前用户:%v, %v, 游戏操作有误，返回错误提示: %v\n", time.Now().Format(time.RFC3339Nano), common.USERNAME, common.USERID, resp["message"].(string)))
+	GAME_MSG_CHAN <- resp["message"].(string)
+}
+
+func HandleGameEndResp(resp map[string]interface{}) {
+	// update game end msg
+	common.LOG_FILE.WriteString(fmt.Sprintf("Now: %v, 当前用户:%v, %v, 游戏对局结束: %v\n", time.Now().Format(time.RFC3339Nano), common.USERNAME, common.USERID, resp["message"].(string)))
 	GAME_MSG_CHAN <- resp["message"].(string)
 }

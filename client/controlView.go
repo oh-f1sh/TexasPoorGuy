@@ -27,7 +27,7 @@ func InitialControlModel() ControlModel {
 
 	ta.Prompt = ""
 	ta.CharLimit = 100
-	ta.SetWidth(30)
+	ta.SetWidth(50)
 	ta.SetHeight(1)
 	ta.FocusedStyle.CursorLine = lipgloss.NewStyle()
 
@@ -109,13 +109,13 @@ func (m ControlModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m ControlModel) View() string {
 	if m.choice == "raise" {
 		s := strings.Builder{}
-		s.WriteString("You chose to raise the bet,   \nenter the amount.\n\n\n\n\n")
+		s.WriteString("You chose to raise the bet, enter the amount.\n\n\n\n\n")
 		s.WriteString(m.textarea.View())
 		s.WriteString("\n\n\n(press enter to confirm)\n")
 		return s.String()
 	} else {
 		s := strings.Builder{}
-		s.WriteString("Use arrow keys to navigate    \nbetween options.\n\n")
+		s.WriteString("Use arrow keys to navigate between options.       \n\n")
 
 		for i := 0; i < len(Choices); i++ {
 			if m.cursor == i {

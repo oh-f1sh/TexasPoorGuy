@@ -51,23 +51,40 @@ const (
 
 func InitialCardModel() CardModel {
 	vp := []viewport.Model{
+		viewport.New(10, 4),
 		viewport.New(4, 4),
 		viewport.New(4, 4),
 		viewport.New(4, 4),
-		viewport.New(4, 4),
-		viewport.New(4, 4),
+		viewport.New(10, 4),
 	}
 	bg := []string{darkgrey, darkgrey, darkgrey, darkgrey, darkgrey}
 	clr := []string{black, black, black, black, black}
 	card := []string{"", "", "", "", ""}
 	for i := range card {
 		vp[i].SetContent(card[i])
-		vp[i].Style = lipgloss.NewStyle().
-			Background(lipgloss.Color(bg[i])).
-			Foreground(lipgloss.Color(clr[i])).
-			Align(lipgloss.Center).
-			Margin(1).
-			Bold(true)
+
+		if i == card1 {
+			vp[i].Style = lipgloss.NewStyle().
+				Background(lipgloss.Color(bg[i])).
+				Foreground(lipgloss.Color(clr[i])).
+				Align(lipgloss.Center).
+				Margin(1, 1, 1, 7).
+				Bold(true)
+		} else if i == card5 {
+			vp[i].Style = lipgloss.NewStyle().
+				Background(lipgloss.Color(bg[i])).
+				Foreground(lipgloss.Color(clr[i])).
+				Align(lipgloss.Center).
+				Margin(1, 7, 1, 1).
+				Bold(true)
+		} else {
+			vp[i].Style = lipgloss.NewStyle().
+				Background(lipgloss.Color(bg[i])).
+				Foreground(lipgloss.Color(clr[i])).
+				Align(lipgloss.Center).
+				Margin(1).
+				Bold(true)
+		}
 	}
 
 	return CardModel{
@@ -93,24 +110,43 @@ func (m CardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cards := msg.(communityCardUpdate)
 		for i := range m.card {
 			m.viewport[i].SetContent(cards.card[i])
-			m.viewport[i].Style = lipgloss.NewStyle().
-				Background(lipgloss.Color(cards.bg[i])).
-				Foreground(lipgloss.Color(cards.color[i])).
-				Align(lipgloss.Center).
-				Margin(1).
-				Bold(true)
+			if i == card1 {
+				m.viewport[i].Style = lipgloss.NewStyle().
+					Background(lipgloss.Color(cards.bg[i])).
+					Foreground(lipgloss.Color(cards.color[i])).
+					Align(lipgloss.Center).
+					Margin(1, 1, 1, 7).
+					Bold(true)
+			} else if i == card5 {
+				m.viewport[i].Style = lipgloss.NewStyle().
+					Background(lipgloss.Color(cards.bg[i])).
+					Foreground(lipgloss.Color(cards.color[i])).
+					Align(lipgloss.Center).
+					Margin(1, 7, 1, 1).
+					Bold(true)
+			} else {
+				m.viewport[i].Style = lipgloss.NewStyle().
+					Background(lipgloss.Color(cards.bg[i])).
+					Foreground(lipgloss.Color(cards.color[i])).
+					Align(lipgloss.Center).
+					Margin(1).
+					Bold(true)
+			}
 		}
 	}
 	return m, waitForCommunityCard()
 }
 
 func (m CardModel) View() string {
-	return lipgloss.JoinHorizontal(lipgloss.Top,
-		m.viewport[card1].View(),
-		m.viewport[card2].View(),
-		m.viewport[card3].View(),
-		m.viewport[card4].View(),
-		m.viewport[card5].View(),
+	return lipgloss.JoinVertical(lipgloss.Center,
+		lipgloss.JoinHorizontal(lipgloss.Top,
+			m.viewport[card1].View(),
+			m.viewport[card2].View(),
+			m.viewport[card3].View(),
+			m.viewport[card4].View(),
+			m.viewport[card5].View(),
+		),
+		"River Card",
 	)
 }
 
@@ -135,8 +171,8 @@ type HandCardModel struct {
 
 func InitialHandCardModel() HandCardModel {
 	vp := []viewport.Model{
-		viewport.New(4, 4),
-		viewport.New(4, 4),
+		viewport.New(8, 4),
+		viewport.New(8, 4),
 	}
 	bg := []string{darkgrey, darkgrey}
 	clr := []string{black, black}
@@ -148,13 +184,13 @@ func InitialHandCardModel() HandCardModel {
 		Background(lipgloss.Color(bg[card1])).
 		Foreground(lipgloss.Color(clr[card1])).
 		Align(lipgloss.Center).
-		Margin(1).
+		Margin(1, 1, 1, 5).
 		Bold(true)
 	vp[card2].Style = lipgloss.NewStyle().
 		Background(lipgloss.Color(bg[card2])).
 		Foreground(lipgloss.Color(clr[card2])).
 		Align(lipgloss.Center).
-		Margin(1).
+		Margin(1, 5, 1, 1).
 		Bold(true)
 
 	return HandCardModel{
@@ -183,14 +219,14 @@ func (m HandCardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			Background(lipgloss.Color(cards.bg[card1])).
 			Foreground(lipgloss.Color(cards.color[card1])).
 			Align(lipgloss.Center).
-			Margin(1).
+			Margin(1, 1, 1, 5).
 			Bold(true)
 		m.viewport[card2].SetContent(cards.card[card2])
 		m.viewport[card2].Style = lipgloss.NewStyle().
 			Background(lipgloss.Color(cards.bg[card2])).
 			Foreground(lipgloss.Color(cards.color[card2])).
 			Align(lipgloss.Center).
-			Margin(1).
+			Margin(1, 5, 1, 1).
 			Bold(true)
 	}
 
@@ -198,9 +234,12 @@ func (m HandCardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m HandCardModel) View() string {
-	return lipgloss.JoinHorizontal(lipgloss.Top,
-		m.viewport[card1].View(),
-		m.viewport[card2].View(),
+	return lipgloss.JoinVertical(lipgloss.Center,
+		lipgloss.JoinHorizontal(lipgloss.Top,
+			m.viewport[card1].View(),
+			m.viewport[card2].View(),
+		),
+		"Hand Card",
 	)
 }
 
