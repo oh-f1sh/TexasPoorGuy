@@ -131,6 +131,10 @@ func Login(name, pwd, addr string) {
 
 func ListenResponse() {
 	defer common.CONN.Close()
+	defer func() {
+		common.CONN.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+		time.After(time.Second)
+	}()
 	defer common.LOG_FILE.Close()
 	for {
 		_, message, err := common.CONN.ReadMessage()

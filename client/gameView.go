@@ -39,9 +39,11 @@ func (m GameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case gameUpdate:
 		m.messages = append(m.messages, msg.(gameUpdate).msg)
+		if len(m.messages) > 3 {
+			m.messages = m.messages[len(m.messages)-3:]
+		}
 		m.viewport.SetContent(strings.Join(m.messages, "\n"))
-		m.viewport.GotoBottom()
-		// m.viewport, vpCmd = m.viewport.Update(msg)
+		m.viewport, vpCmd = m.viewport.Update(msg)
 	}
 	return m, tea.Batch(vpCmd, waitForGameMsg())
 }
