@@ -41,7 +41,7 @@ func (m GameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.messages = append(m.messages, msg.(gameUpdate).msg)
 		m.viewport.SetContent(strings.Join(m.messages, "\n"))
 		m.viewport.GotoBottom()
-		m.viewport, vpCmd = m.viewport.Update(msg)
+		// m.viewport, vpCmd = m.viewport.Update(msg)
 	}
 	return m, tea.Batch(vpCmd, waitForGameMsg())
 }

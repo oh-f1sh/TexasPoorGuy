@@ -274,9 +274,9 @@ func HandleGameInfoResp(resp map[string]interface{}) {
 	if game_gameInfo["board"] != nil {
 		for i, card := range game_gameInfo["board"].([]interface{}) {
 			c := card.(map[string]interface{})
-			POOR_GUY_CLIENT.CardView.card[i] = c["desc"].(string) + "\n" + suitMap[int(c["suit"].(float64))]
-			POOR_GUY_CLIENT.CardView.color[i] = suitColor[int(c["suit"].(float64))]
-			POOR_GUY_CLIENT.CardView.background[i] = white
+			ccUpdate.card[i] = c["desc"].(string) + "\n" + suitMap[int(c["suit"].(float64))]
+			ccUpdate.color[i] = suitColor[int(c["suit"].(float64))]
+			ccUpdate.bg[i] = white
 		}
 	}
 	common.LOG_FILE.WriteString(fmt.Sprintf("Now: %v, 当前用户:%v, %v, 牌河更新: %+v\n", time.Now().Format(time.RFC3339Nano), common.USERNAME, common.USERID, ccUpdate))
