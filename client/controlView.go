@@ -115,7 +115,7 @@ func (m ControlModel) View() string {
 		return s.String()
 	} else {
 		s := strings.Builder{}
-		s.WriteString("Use arrow keys to navigate between options.       \n\n")
+		s.WriteString("Arrow keys to navigate.\n's' to start, 'e' to exit.                        \n\n")
 
 		for i := 0; i < len(Choices); i++ {
 			if m.cursor == i {
@@ -126,7 +126,7 @@ func (m ControlModel) View() string {
 			s.WriteString(Choices[i])
 			s.WriteString("\n")
 		}
-		s.WriteString("\n(press enter to confirm)\n")
+		s.WriteString("\n(press enter to confirm)")
 
 		return s.String()
 	}

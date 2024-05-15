@@ -20,6 +20,18 @@ type Request struct {
 	Token string      `json:"token,omitempty"`
 }
 
+func GetSubsidy() {
+	req := Request{
+		Type:  "get_subsidy",
+		Data:  map[string]string{},
+		Token: common.TOKEN,
+	}
+	err := common.CONN.WriteJSON(req)
+	if err != nil {
+		log.Fatal("fatal:", err)
+	}
+}
+
 func ListRoom() {
 	req := Request{
 		Type:  "list_room",
@@ -53,6 +65,18 @@ func JoinRoom(id int) {
 		Data: map[string]interface{}{
 			"room_id": id,
 		},
+		Token: common.TOKEN,
+	}
+	err := common.CONN.WriteJSON(req)
+	if err != nil {
+		log.Fatal("fatal:", err)
+	}
+}
+
+func QuitRoom() {
+	req := Request{
+		Type:  "quit_room",
+		Data:  map[string]interface{}{},
 		Token: common.TOKEN,
 	}
 	err := common.CONN.WriteJSON(req)
@@ -203,11 +227,16 @@ func HandleListRoomResp(resp map[string]interface{}) {
 }
 
 func HandleCreateRoomResp(resp map[string]interface{}) {
-	data := resp["data"].(map[string]interface{})
-	roomID := int(data["id"].(float64))
-	common.ROOMID = roomID
-	common.ROOMOWNERID = common.USERID
-	CREATE_ROOM_SIGNAL <- 1
+	if resp["data"] != nil {
+		data := resp["data"].(map[string]interface{})
+		roomID := int(data["id"].(float64))
+		common.ROOMID = roomID
+		common.ROOMOWNERID = common.USERID
+		CREATE_ROOM_SIGNAL <- 1
+	} else {
+		CREATE_ROOM_SIGNAL <- -1
+	}
+
 }
 
 func HandleJoinRoomResp(resp map[string]interface{}) {
@@ -299,7 +328,6 @@ func HandleGameInfoResp(resp map[string]interface{}) {
 			s.WriteString(waitingPlayerNameStyle.Render(p["player"].(map[string]interface{})["Username"].(string) + ":"))
 			s.WriteString(strconv.Itoa(int(p["player"].(map[string]interface{})["chip"].(float64))) + ", ")
 			s.WriteString("bets " + strconv.Itoa(int(p["bets"].(float64))) + ", ")
-			s.WriteString("bets " + strconv.Itoa(int(p["bets"].(float64))) + ", ")
 			if p["folded"].(bool) {
 				s.WriteString("state: folded")
 			} else if p["allIn"].(bool) {
@@ -312,7 +340,6 @@ func HandleGameInfoResp(resp map[string]interface{}) {
 			s.WriteString(playingPlayerStyle.Render(strconv.Itoa(i+1) + "."))
 			s.WriteString(playingPlayerNameStyle.Render(p["player"].(map[string]interface{})["Username"].(string) + ":"))
 			s.WriteString(strconv.Itoa(int(p["player"].(map[string]interface{})["chip"].(float64))) + ", ")
-			s.WriteString("bets " + strconv.Itoa(int(p["bets"].(float64))) + ", ")
 			s.WriteString("bets " + strconv.Itoa(int(p["bets"].(float64))) + ", ")
 			if p["folded"].(bool) {
 				s.WriteString("state: folded")

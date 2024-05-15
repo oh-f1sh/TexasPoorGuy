@@ -82,6 +82,10 @@ func (m PoorGuyClient) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.ChatView = c.(ChatModel)
 			cmds = append(cmds, cmd)
 		case focusControl:
+			if msg.String() == "e" {
+				QuitRoom()
+				return InitialRoomModel(), nil
+			}
 			c, cmd := m.ControlView.Update(msg)
 			m.ControlView = c.(ControlModel)
 			cmds = append(cmds, cmd)

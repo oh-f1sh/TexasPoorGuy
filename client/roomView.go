@@ -70,9 +70,10 @@ func (m RoomModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "n":
 			CreateRoom()
-			<-CREATE_ROOM_SIGNAL
-			cli := InitialPoorGuyClient()
-			return cli, cli.Init()
+			if <-CREATE_ROOM_SIGNAL == 1 {
+				cli := InitialPoorGuyClient()
+				return cli, cli.Init()
+			}
 		case "r":
 			ListRoom()
 			<-LIST_ROOM_SIGNAL
@@ -81,6 +82,8 @@ func (m RoomModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				items = append(items, v)
 			}
 			m.list.SetItems(items)
+		case "p":
+			GetSubsidy()
 		}
 	}
 
@@ -90,5 +93,7 @@ func (m RoomModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m RoomModel) View() string {
-	return docStyle.Render(m.list.View()) + "\n\n" + additonalHelpStyle.Render("Enter	join room	|	n	new room\nr		refresh list"+"\n\n"+refreshTimeStyle.Render("last refreshed at: "+time.Now().Format("15:04:05")))
+	return docStyle.Render(m.list.View()) +
+		"\n\n" + additonalHelpStyle.Render("Enter	join room	|	n	new room\nr		refresh list	|	p	get subsidy"+
+		"\n\n"+refreshTimeStyle.Render("last refreshed at: "+time.Now().Format("15:04:05")))
 }

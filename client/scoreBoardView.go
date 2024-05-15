@@ -8,10 +8,10 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-var waitingPlayerStyle = lipgloss.NewStyle().Background(lipgloss.Color(darkgrey))
-var waitingPlayerNameStyle = lipgloss.NewStyle().Foreground(hotPink).Background(lipgloss.Color(darkgrey))
-var playingPlayerStyle = lipgloss.NewStyle().Background(lipgloss.Color(lightgrey))
-var playingPlayerNameStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(lightpink)).Background(lipgloss.Color(lightgrey))
+var waitingPlayerStyle = lipgloss.NewStyle().Background(lipgloss.Color(lightgrey))
+var waitingPlayerNameStyle = lipgloss.NewStyle().Foreground(hotPink).Background(lipgloss.Color(lightgrey))
+var playingPlayerStyle = lipgloss.NewStyle().Background(lipgloss.Color(darkgrey))
+var playingPlayerNameStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(lightpink)).Background(lipgloss.Color(darkgrey))
 
 type scoreboardUpdate struct {
 	scores []string
