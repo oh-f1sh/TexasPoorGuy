@@ -1,3 +1,7 @@
-# TexasPoorGuy
+# TexasPoorGuy 扑街德扑
 
-	log.Printf("正在向%v, %v发送信息, 信息内容如下: \n%v\n", p.ID, p.Username, string(msg))
+> 可以简称扑扑
+
+这是一款德扑游戏客户端
+
+No real money is harmed during the gameplay.
