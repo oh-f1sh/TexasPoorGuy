@@ -72,8 +72,10 @@ func (m ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
 		case tea.KeyEnter:
-			SendMsg(common.ROOMID, m.textarea.Value())
-			m.textarea.Reset()
+			if len(m.textarea.Value()) > 0 {
+				SendMsg(common.ROOMID, m.textarea.Value())
+				m.textarea.Reset()
+			}
 		}
 	case chatUpdate:
 		m.viewport.SetContent(msg.(chatUpdate).content)

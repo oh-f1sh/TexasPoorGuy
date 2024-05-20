@@ -240,13 +240,18 @@ func HandleCreateRoomResp(resp map[string]interface{}) {
 }
 
 func HandleJoinRoomResp(resp map[string]interface{}) {
-	data := resp["data"].(map[string]interface{})
-	var roomID string
-	for k := range data {
-		roomID = k
+	if resp["data"] != nil {
+		data := resp["data"].(map[string]interface{})
+		var roomID string
+		for k := range data {
+			roomID = k
+		}
+		common.ROOMID = int(data[roomID].(map[string]interface{})["id"].(float64))
+		common.ROOMOWNERID = int(data[roomID].(map[string]interface{})["owner"].(map[string]interface{})["ID"].(float64))
+		JOIN_ROOM_SIGNAL <- 1
+	} else {
+		JOIN_ROOM_SIGNAL <- -1
 	}
-	common.ROOMID = int(data[roomID].(map[string]interface{})["id"].(float64))
-	common.ROOMOWNERID = int(data[roomID].(map[string]interface{})["owner"].(map[string]interface{})["ID"].(float64))
 }
 
 func HandleRoomChatResp(resp map[string]interface{}) {

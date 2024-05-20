@@ -63,8 +63,10 @@ func (m RoomModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyEnter:
 			if len(ROOM_LIST) > 0 {
 				JoinRoom(ROOM_LIST[m.list.Index()].id)
-				cli := InitialPoorGuyClient()
-				return cli, cli.Init()
+				if <-JOIN_ROOM_SIGNAL == 1 {
+					cli := InitialPoorGuyClient()
+					return cli, cli.Init()
+				}
 			}
 		}
 		switch msg.String() {
